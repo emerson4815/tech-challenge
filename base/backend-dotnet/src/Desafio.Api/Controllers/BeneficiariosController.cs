@@ -30,6 +30,19 @@ public class BeneficiariosController(AppDbContext _db, BeneficiarioServico servi
             $"/beneficiarios/{beneficiario.Id}",
             BeneficiarioResponse.De(beneficiario));
     }
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType<BeneficiarioResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Obter(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        var beneficiario = await servico.ObterAsync(
+            id,
+            cancellationToken);
+
+        return Ok(BeneficiarioResponse.De(beneficiario));
+    }
 
     [HttpGet]
     public async Task<IActionResult> Listar()
