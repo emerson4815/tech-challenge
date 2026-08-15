@@ -10,7 +10,7 @@ namespace Desafio.Api.Controllers;
 [ApiController]
 [Route("beneficiarios")]
 [Produces("application/json")]
-public class BeneficiariosController(AppDbContext _db, BeneficiarioServico servico) : ControllerBase
+public class BeneficiariosController(BeneficiarioServico servico) : ControllerBase
 {
 
 
@@ -45,18 +45,11 @@ public class BeneficiariosController(AppDbContext _db, BeneficiarioServico servi
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar()
+    [ProducesResponseType<PaginacaoResponse<BeneficiarioResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Listar([FromQuery] BeneficiarioFiltro filtro, CancellationToken cancellationToken)
     {
-        var lista = await _db.Beneficiarios.ToListAsync();
-
-        // O plano é resolvido aqui, e não na consulta principal, porque o FindAsync usa o
-        // cache do contexto: a listagem continua fazendo uma única ida ao banco, qualquer
-        // que seja o tamanho da página.
-        foreach (var b in lista)
-        {
-            b.Plano = await _db.Planos.FindAsync(b.PlanoId);
-        }
-
-        return Ok(lista);
+        var resultado = await servico.ListarAsync(filtro, cancellationToken);
+        return Ok(resultado);
     }
 }

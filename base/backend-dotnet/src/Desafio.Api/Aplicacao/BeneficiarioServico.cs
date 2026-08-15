@@ -170,5 +170,64 @@ public class BeneficiarioServico(AppDbContext db)
     private static bool EhViolacaoDeUnicidade(DbUpdateException excecao) =>
     excecao.InnerException is PostgresException postgres &&
     postgres.SqlState == CodigoViolacaoDeUnicidade;
+    private static void ValidarFiltro(BeneficiarioFiltro filtro)
+    {
+        var detalhes = new List<DetalheErro>();
+
+        if (filtro.Pagina < 1)
+        {
+            detalhes.Add(new DetalheErro("pagina", "invalido"));
+        }
+
+        if (filtro.Tamanho < 1 || filtro.Tamanho > 100)
+        {
+            detalhes.Add(new DetalheErro("tamanho", "invalido"));
+        }
+
+        if (detalhes.Count > 0)
+        {
+            throw new ValidacaoException(
+                "Parâmetros de paginação inválidos",
+                detalhes);
+        }
+    }
+    public async Task<PaginacaoResponse<BeneficiarioResponse>> ListarAsync(
+    BeneficiarioFiltro filtro,
+    CancellationToken cancellationToken)
+    {
+        ValidarFiltro(filtro);
+
+        var consulta = db.Beneficiarios
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (filtro.Status is not null)
+        {
+            consulta = consulta.Where(b => b.Status == filtro.Status);
+        }
+
+        if (filtro.PlanoId is not null)
+        {
+            consulta = consulta.Where(b => b.PlanoId == filtro.PlanoId);
+        }
+
+        var total = await consulta.CountAsync(cancellationToken);
+
+        var beneficiarios = await consulta
+            .OrderBy(b => b.Id)
+            .Skip((filtro.Pagina - 1) * filtro.Tamanho)
+            .Take(filtro.Tamanho)
+            .ToListAsync(cancellationToken);
+
+        var dados = beneficiarios
+            .Select(BeneficiarioResponse.De)
+            .ToList();
+
+        return new PaginacaoResponse<BeneficiarioResponse>(
+            dados,
+            filtro.Pagina,
+            filtro.Tamanho,
+            total);
+    }
 }
 

@@ -1,4 +1,5 @@
 using Desafio.Api.Dominio;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Desafio.Api.Api.Contratos;
 
@@ -27,3 +28,14 @@ public sealed record BeneficiarioRequestDados(
     DateOnly? DataNascimento,
     Guid? PlanoId
 );
+public sealed class BeneficiarioFiltro
+{
+    public int Pagina { get; init; } = 1;
+
+    public int Tamanho { get; init; } = 10;
+
+    public StatusBeneficiario? Status { get; init; }
+
+    [FromQuery(Name = "plano_id")]
+    public Guid? PlanoId { get; init; }
+}
