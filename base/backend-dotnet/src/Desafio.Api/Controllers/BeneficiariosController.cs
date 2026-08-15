@@ -1,3 +1,5 @@
+using Desafio.Api.Api.Contratos;
+using Desafio.Api.Aplicacao;
 using Desafio.Api.Dominio;
 using Desafio.Api.Infraestrutura;
 using Microsoft.AspNetCore.Mvc;
@@ -8,37 +10,25 @@ namespace Desafio.Api.Controllers;
 [ApiController]
 [Route("beneficiarios")]
 [Produces("application/json")]
-public class BeneficiariosController : ControllerBase
+public class BeneficiariosController(AppDbContext _db, BeneficiarioServico servico) : ControllerBase
 {
-    private readonly AppDbContext _db;
 
-    public BeneficiariosController(AppDbContext db)
-    {
-        _db = db;
-    }
 
     [HttpPost]
-    public async Task<IActionResult> Criar([FromBody] Beneficiario beneficiario)
+    [ProducesResponseType<BeneficiarioResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> Criar(
+     [FromBody] BeneficiarioRequestDados requisicao,
+     CancellationToken cancellationToken)
     {
-        if (beneficiario.Cpf.Length == 11)
-        {
-            // Mesmo modelo do PlanoServico: a garantia de unicidade é o índice único da
-            // tabela, e esta consulta prévia existe só para recusar o pedido antes de ele
-            // chegar no banco.
-            var existe = _db.Beneficiarios.Any(b => b.Cpf == beneficiario.Cpf);
 
-            if (!existe)
-            {
-                _db.Beneficiarios.Add(beneficiario);
-                await _db.SaveChangesAsync();
+        var beneficiario = await servico.CriarAsync(requisicao, cancellationToken);
 
-                return Ok(beneficiario);
-            }
-
-            return BadRequest("CPF ja cadastrado");
-        }
-
-        return BadRequest("CPF invalido");
+        return Created(
+            $"/beneficiarios/{beneficiario.Id}",
+            BeneficiarioResponse.De(beneficiario));
     }
 
     [HttpGet]
