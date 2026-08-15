@@ -33,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
             entidade.HasIndex(b => b.Cpf)
                 .IsUnique();
+            entidade.HasQueryFilter(b => b.ExcluidoEm == null);
         });
     }
 }

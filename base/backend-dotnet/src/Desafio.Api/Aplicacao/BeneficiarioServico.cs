@@ -57,6 +57,7 @@ public class BeneficiarioServico(AppDbContext db)
         CancellationToken cancellationToken)
     {
         var existe = await db.Beneficiarios
+         .IgnoreQueryFilters()
             .AsNoTracking()
             .AnyAsync(b => b.Cpf == cpf, cancellationToken);
 
@@ -162,7 +163,6 @@ public class BeneficiarioServico(AppDbContext db)
     CancellationToken cancellationToken)
     {
         return await db.Beneficiarios
-            .AsNoTracking()
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
             ?? throw new NaoEncontradoException(
                 "Beneficiário não encontrado");
@@ -317,6 +317,16 @@ public class BeneficiarioServico(AppDbContext db)
         await db.SaveChangesAsync(cancellationToken);
 
         return beneficiario;
+    }
+    public async Task ExcluirAsync(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        var beneficiario = await ObterAsync(id, cancellationToken);
+
+        beneficiario.Excluir();
+
+        await SalvarAsync(cancellationToken);
     }
 }
 

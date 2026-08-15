@@ -23,4 +23,6 @@ public class Beneficiario
     public Plano? Plano { get; set; }
 
     public DateTime DataCadastro { get; set; }
+    public DateTime? ExcluidoEm { get; private set; }
+    public void Excluir() => ExcluidoEm = DateTime.UtcNow;
 }
