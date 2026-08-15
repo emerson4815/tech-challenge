@@ -130,6 +130,22 @@ public class BeneficiariosTests(ApiFixture fixture) : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
     }
+    [Fact]
+    public async Task Atualizar_dados_de_beneficiario_inativo_deve_devolver_409()
+    {
+        var beneficiario = (await fixture.SemearBeneficiariosAsync(
+            1, Planos.Bronze, "INATIVO", 500)).Single();
+
+        var resposta = await Client.PutAsync($"/beneficiarios/{beneficiario.Id}", Http.Json(new
+        {
+            NomeCompleto = "Nome Corrigido do Inativo",
+            DataNascimento = "1990-05-12",
+            PlanoId = Planos.Bronze,
+            Status = "INATIVO"
+        }));
+
+        Assert.Equal(HttpStatusCode.Conflict, resposta.StatusCode);
+    }
 
     // ------------------------------------------------------------------ exclusão
 
@@ -223,25 +239,5 @@ public class BeneficiariosTests(ApiFixture fixture) : IAsyncLifetime
         Assert.Equal(10, corpo.GetProperty("dados").GetArrayLength());
         Assert.Equal(10, corpo.GetProperty("tamanho").GetInt32());
         Assert.Equal(25, corpo.GetProperty("total").GetInt32());
-    }
-
-    [Fact]
-    public async Task Atualizar_dados_de_beneficiario_inativo_deve_devolver_200()
-    {
-        var beneficiario = (await fixture.SemearBeneficiariosAsync(
-            1, Planos.Bronze, "INATIVO", 500)).Single();
-
-        var resposta = await Client.PutAsync($"/beneficiarios/{beneficiario.Id}", Http.Json(new
-        {
-            NomeCompleto = "Nome Corrigido do Inativo",
-            DataNascimento = "1990-05-12",
-            PlanoId = Planos.Bronze,
-            Status = "INATIVO"
-        }));
-
-        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
-
-        var corpo = await resposta.CorpoAsync();
-        Assert.Equal("Nome Corrigido do Inativo", corpo.GetProperty("nome_completo").GetString());
     }
 }

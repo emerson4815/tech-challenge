@@ -52,4 +52,28 @@ public class BeneficiariosController(BeneficiarioServico servico) : ControllerBa
         var resultado = await servico.ListarAsync(filtro, cancellationToken);
         return Ok(resultado);
     }
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType<BeneficiarioResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ErroResponse>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> Atualizar(
+    Guid id,
+    [FromBody] AtualizarBeneficiarioRequest requisicao,
+    CancellationToken cancellationToken)
+    {
+        var dados = new AtualizarBeneficiarioDados(
+            requisicao.NomeCompleto,
+            requisicao.DataNascimento,
+            requisicao.PlanoId,
+            requisicao.Status);
+
+        var beneficiario = await servico.AtualizarAsync(
+            id,
+            dados,
+            cancellationToken);
+
+        return Ok(BeneficiarioResponse.De(beneficiario));
+    }
 }

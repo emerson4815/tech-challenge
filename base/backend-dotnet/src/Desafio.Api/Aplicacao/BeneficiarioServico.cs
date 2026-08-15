@@ -191,6 +191,38 @@ public class BeneficiarioServico(AppDbContext db)
                 detalhes);
         }
     }
+    private static void ValidarDadosAtualizacao(
+    AtualizarBeneficiarioDados dados)
+    {
+        var detalhes = new List<DetalheErro>();
+
+        if (dados.NomeCompleto is not null &&
+            string.IsNullOrWhiteSpace(dados.NomeCompleto))
+        {
+            detalhes.Add(
+                new DetalheErro("nome_completo", "invalido"));
+        }
+
+        if (dados.DataNascimento is not null &&
+            dados.DataNascimento > DateOnly.FromDateTime(DateTime.UtcNow))
+        {
+            detalhes.Add(
+                new DetalheErro("data_nascimento", "invalido"));
+        }
+
+        if (dados.PlanoId == Guid.Empty)
+        {
+            detalhes.Add(
+                new DetalheErro("plano_id", "invalido"));
+        }
+
+        if (detalhes.Count > 0)
+        {
+            throw new ValidacaoException(
+                "Dados do beneficiário inválidos",
+                detalhes);
+        }
+    }
     public async Task<PaginacaoResponse<BeneficiarioResponse>> ListarAsync(
     BeneficiarioFiltro filtro,
     CancellationToken cancellationToken)
@@ -228,6 +260,63 @@ public class BeneficiarioServico(AppDbContext db)
             filtro.Pagina,
             filtro.Tamanho,
             total);
+    }
+    public async Task<Beneficiario> AtualizarAsync(
+    Guid id,
+    AtualizarBeneficiarioDados dados,
+    CancellationToken cancellationToken)
+    {
+        var beneficiario = await db.Beneficiarios
+            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
+            ?? throw new NaoEncontradoException(
+                "Beneficiário não encontrado");
+
+        ValidarDadosAtualizacao(dados);
+
+        if (dados.PlanoId is not null)
+        {
+            await GarantirPlanoExisteAsync(
+                dados.PlanoId.Value,
+                cancellationToken);
+        }
+
+        if (beneficiario.Status == StatusBeneficiario.INATIVO)
+        {
+            var tentouAlterarDadosCadastrais =
+                dados.NomeCompleto is not null ||
+                dados.DataNascimento is not null ||
+                dados.PlanoId is not null;
+
+            if (tentouAlterarDadosCadastrais)
+            {
+                throw new ConflitoException(
+                    "Beneficiário inativo não pode ter dados cadastrais alterados");
+            }
+        }
+
+        if (dados.NomeCompleto is not null)
+        {
+            beneficiario.NomeCompleto = dados.NomeCompleto.Trim();
+        }
+
+        if (dados.DataNascimento is not null)
+        {
+            beneficiario.DataNascimento = dados.DataNascimento.Value;
+        }
+
+        if (dados.PlanoId is not null)
+        {
+            beneficiario.PlanoId = dados.PlanoId.Value;
+        }
+
+        if (dados.Status is not null)
+        {
+            beneficiario.Status = dados.Status.Value;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return beneficiario;
     }
 }
 
