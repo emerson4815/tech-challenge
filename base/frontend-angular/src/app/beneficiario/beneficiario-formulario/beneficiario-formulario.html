@@ -1,0 +1,110 @@
+<p>beneficiario-formulario works!</p>
+<div class="modal-overlay">
+  <div class="modal">
+    <header class="modal-cabecalho">
+      <h3>
+        {{ editando ? 'Editar beneficiário' : 'Cadastrar beneficiário' }}
+      </h3>
+    </header>
+
+    @if (erro()) {
+      <p class="erro">{{ erro() }}</p>
+    }
+
+    <div class="campo">
+      <label for="nome">Nome completo</label>
+
+      <input
+        id="nome"
+        type="text"
+        [(ngModel)]="nomeCompleto"
+         [disabled]="beneficiarioInativo || salvando()"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="cpf">CPF</label>
+
+      @if (editando) {
+  <input
+    id="cpf"
+    type="text"
+    [value]="formatarCpf(cpf)"
+    disabled
+  />
+} @else {
+  <input
+    id="cpf"
+    type="text"
+    maxlength="11"
+    [(ngModel)]="cpf"
+    [disabled]="salvando()"
+  />
+}
+
+    </div>
+
+    <div class="campo">
+      <label for="dataNascimento">Data de nascimento</label>
+
+      <input
+        id="dataNascimento"
+        type="date"
+        [(ngModel)]="dataNascimento"
+         [disabled]="beneficiarioInativo || salvando()"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="plano">Plano</label>
+
+      <select
+        id="plano"
+        [(ngModel)]="planoId"
+         [disabled]="beneficiarioInativo || salvando()"
+      >
+        <option value="">Selecione um plano</option>
+
+        @for (plano of planos(); track plano.id) {
+          <option [value]="plano.id">
+            {{ plano.nome }}
+          </option>
+        }
+      </select>
+    </div>
+
+    @if (editando) {
+      <div class="campo">
+        <label for="status">Situação</label>
+
+        <select
+          id="status"
+          [(ngModel)]="status"
+          [disabled]="salvando()"
+        >
+          <option value="ATIVO">Ativo</option>
+          <option value="INATIVO">Inativo</option>
+        </select>
+      </div>
+    }
+
+    <footer class="modal-acoes">
+      <button
+        type="button"
+        (click)="cancelar()"
+        [disabled]="salvando()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="salvar"
+        (click)="salvar()"
+        [disabled]="salvando()"
+      >
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </footer>
+  </div>
+</div>

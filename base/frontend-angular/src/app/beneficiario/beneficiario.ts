@@ -10,10 +10,16 @@ export interface Beneficiario {
   data_cadastro: string;
 }
 
-export interface BeneficiarioRequest {
+export interface CriarBeneficiarioRequest {
   nome_completo: string;
-  cpf?: string;
+  cpf: string;
   data_nascimento: string;
   plano_id: string;
+}
+
+export interface AtualizarBeneficiarioRequest {
+  nome_completo?: string;
+  data_nascimento?: string;
+  plano_id?: string;
   status?: StatusBeneficiario;
 }

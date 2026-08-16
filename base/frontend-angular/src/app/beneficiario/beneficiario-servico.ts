@@ -3,7 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE } from '../nucleo/api';
-import { Beneficiario, StatusBeneficiario } from './beneficiario';
+import {
+  AtualizarBeneficiarioRequest,
+  Beneficiario,
+  CriarBeneficiarioRequest,
+  StatusBeneficiario,
+} from './beneficiario';
 import { ListaPaginada } from '../nucleo/lista-paginada';
 
 @Injectable({ providedIn: 'root' })
@@ -28,5 +33,17 @@ export class BeneficiarioServico {
     }
 
     return this.http.get<ListaPaginada<Beneficiario>>(`${this.base}/beneficiarios`, { params });
+  }
+
+  criar(dados: CriarBeneficiarioRequest): Observable<Beneficiario> {
+    return this.http.post<Beneficiario>(`${this.base}/beneficiarios`, dados);
+  }
+
+  atualizar(id: string, dados: AtualizarBeneficiarioRequest): Observable<Beneficiario> {
+    return this.http.put<Beneficiario>(`${this.base}/beneficiarios/${id}`, dados);
+  }
+
+  excluir(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/beneficiarios/${id}`);
   }
 }

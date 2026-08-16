@@ -1,0 +1,90 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(450px, calc(100% - 2rem));
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.modal-cabecalho {
+  margin-bottom: 1.25rem;
+}
+
+.modal-cabecalho h3 {
+  margin: 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.campo label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  border: 1px solid #c3c8d0;
+  border-radius: 6px;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+  background: #fff;
+}
+
+.campo input:disabled,
+.campo select:disabled {
+  background: #f3f4f6;
+  cursor: default;
+}
+
+.campo small {
+  color: #6b7280;
+}
+
+.erro {
+  background: #fee4e2;
+  color: #b42318;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+button {
+  border: 1px solid #c3c8d0;
+  background: #f6f7f9;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.salvar {
+  background: #1f2937;
+  color: #fff;
+  border-color: #1f2937;
+}

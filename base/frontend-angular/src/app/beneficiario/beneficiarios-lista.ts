@@ -4,13 +4,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { mensagemDeErro } from '../nucleo/api';
 import { Beneficiario, StatusBeneficiario } from './beneficiario';
-import { BeneficiarioServico } from './beneficiario-service';
+import { BeneficiarioServico } from './beneficiario-servico';
 import { PlanoServico } from '../planos/plano-servico';
 import { Plano } from '../planos/plano';
-import { formatarCpf } from '../nucleo/formatadores';
+import { formatarCpf, formatarData } from '../nucleo/formatadores';
+import { MensagemServico } from '../nucleo/mensagem-servico';
+import { BeneficiarioFormulario } from './beneficiario-formulario/beneficiario-formulario';
 
 @Component({
   selector: 'app-beneficiarios-lista',
+  imports: [BeneficiarioFormulario],
   templateUrl: './beneficiarios-lista.html',
   styleUrl: './beneficiarios-lista.css',
 })
@@ -34,6 +37,19 @@ export class BeneficiariosLista {
   protected readonly planos = signal<Plano[]>([]);
   protected readonly carregandoPlanos = signal(true);
   protected readonly formatarCpf = formatarCpf;
+  protected readonly formatarData = formatarData;
+
+  protected readonly modalExcluirAberto = signal(false);
+  protected readonly beneficiarioExcluir = signal<Beneficiario | null>(null);
+
+  protected readonly excluindo = signal(false);
+
+  private readonly mensagemServico = inject(MensagemServico);
+  protected readonly mensagem = this.mensagemServico.mensagem;
+
+  protected readonly beneficiarioSelecionado = signal<Beneficiario | null>(null);
+
+  protected readonly formularioAberto = signal(false);
 
   constructor() {
     this.carregarPlanos();
@@ -99,5 +115,49 @@ export class BeneficiariosLista {
 
     this.pagina.update((valor) => valor + 1);
     this.carregar();
+  }
+  protected editar(beneficiario: Beneficiario): void {
+    this.beneficiarioSelecionado.set(beneficiario);
+    this.formularioAberto.set(true);
+  }
+
+  protected fecharFormulario(): void {
+    this.formularioAberto.set(false);
+    this.beneficiarioSelecionado.set(null);
+  }
+
+  protected abrirExclusao(beneficiario: Beneficiario): void {
+    this.beneficiarioExcluir.set(beneficiario);
+    this.modalExcluirAberto.set(true);
+  }
+
+  protected fecharExclusao(): void {
+    this.beneficiarioExcluir.set(null);
+    this.modalExcluirAberto.set(false);
+  }
+  protected confirmarExclusao(): void {
+    const beneficiario = this.beneficiarioExcluir();
+
+    if (!beneficiario) {
+      return;
+    }
+    this.excluindo.set(true);
+    this.erro.set(null);
+
+    this.servico
+      .excluir(beneficiario.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.excluindo.set(false);
+          this.fecharExclusao();
+          this.mensagemServico.sucesso('Beneficiário excluído com sucesso.');
+          this.carregar();
+        },
+        error: (resposta: HttpErrorResponse) => {
+          this.excluindo.set(false);
+          this.erro.set(mensagemDeErro(resposta));
+        },
+      });
   }
 }
