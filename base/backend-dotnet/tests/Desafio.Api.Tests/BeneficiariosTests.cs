@@ -240,4 +240,83 @@ public class BeneficiariosTests(ApiFixture fixture) : IAsyncLifetime
         Assert.Equal(10, corpo.GetProperty("tamanho").GetInt32());
         Assert.Equal(25, corpo.GetProperty("total").GetInt32());
     }
+
+    [Fact]
+    public async Task Listar_por_nome_deve_devolver_beneficiario_existente()
+    {
+        var beneficiario = (await fixture.SemearBeneficiariosAsync(1)).Single();
+
+        var corpo = await (
+            await Client.GetAsync(
+                $"/beneficiarios?nome={Uri.EscapeDataString(beneficiario.NomeCompleto)}")
+        ).CorpoAsync();
+
+        Assert.Equal(1, corpo.GetProperty("total").GetInt32());
+
+        var dados = corpo.GetProperty("dados");
+        Assert.Single(dados.EnumerateArray());
+
+        var encontrado = dados.EnumerateArray().Single();
+
+        Assert.Equal(
+            beneficiario.Id,
+            encontrado.GetProperty("id").GetGuid());
+    }
+    [Fact]
+    public async Task Listar_por_nome_nao_deve_devolver_beneficiario_excluido()
+    {
+        var beneficiario = (await fixture.SemearBeneficiariosAsync(1)).Single();
+
+        var exclusao = await Client.DeleteAsync(
+            $"/beneficiarios/{beneficiario.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, exclusao.StatusCode);
+
+        var corpo = await (
+            await Client.GetAsync(
+                $"/beneficiarios?nome={Uri.EscapeDataString(beneficiario.NomeCompleto)}")
+        ).CorpoAsync();
+
+        Assert.Equal(0, corpo.GetProperty("total").GetInt32());
+        Assert.Empty(corpo.GetProperty("dados").EnumerateArray());
+    }
+    [Fact]
+    public async Task Listar_por_nome_inexistente_deve_devolver_lista_vazia()
+    {
+        await fixture.SemearBeneficiariosAsync(3);
+
+        var corpo = await (
+            await Client.GetAsync(
+                "/beneficiarios?nome=NomeQueNaoExiste")
+        ).CorpoAsync();
+
+        Assert.Equal(0, corpo.GetProperty("total").GetInt32());
+        Assert.Empty(corpo.GetProperty("dados").EnumerateArray());
+    }
+    [Fact]
+    public async Task Listar_por_nome_deve_aceitar_busca_parcial_e_ignorar_maiusculas_minusculas()
+    {
+        var beneficiario = (await fixture.SemearBeneficiariosAsync(1)).Single();
+
+        var nomeParcial = beneficiario.NomeCompleto
+            .Substring(0, 4)
+            .ToLowerInvariant();
+
+        var corpo = await (
+            await Client.GetAsync(
+                $"/beneficiarios?nome={Uri.EscapeDataString(nomeParcial)}")
+        ).CorpoAsync();
+
+        Assert.Equal(1, corpo.GetProperty("total").GetInt32());
+
+        var dados = corpo.GetProperty("dados");
+
+        Assert.Single(dados.EnumerateArray());
+
+        var encontrado = dados.EnumerateArray().Single();
+
+        Assert.Equal(
+            beneficiario.Id,
+            encontrado.GetProperty("id").GetGuid());
+    }
 }

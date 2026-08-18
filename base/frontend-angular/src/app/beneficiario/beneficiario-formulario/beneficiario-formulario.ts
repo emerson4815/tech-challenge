@@ -123,7 +123,6 @@ export class BeneficiarioFormulario {
     }
 
     this.salvando.set(true);
-    console.log(JSON.stringify(dados, null, 2));
     this.servico
       .atualizar(id, dados)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -201,5 +200,8 @@ export class BeneficiarioFormulario {
 
   private cpfValido(cpf: string): boolean {
     return /^\d{11}$/.test(cpf);
+  }
+  protected alterarCpf(valor: string): void {
+    this.cpf = valor.replace(/\D/g, '').slice(0, 11);
   }
 }

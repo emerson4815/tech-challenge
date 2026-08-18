@@ -124,3 +124,39 @@ th {
   padding: 0.75rem 1rem;
   border-radius: 6px;
 }
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.campo-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.campo-filtro label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.campo-filtro input,
+.campo-filtro select {
+  border: 1px solid #c3c8d0;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+}
+.acoes-filtro {
+  align-items: center;
+  justify-content: flex-end;
+
+  margin-bottom: 0.15rem;
+}
+
+.acoes-cabecalho {
+  display: flex;
+  gap: 1rem;
+}

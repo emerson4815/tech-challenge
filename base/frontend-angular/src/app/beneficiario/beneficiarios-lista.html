@@ -1,9 +1,15 @@
 <section class="cartao">
   <header class="cabecalho">
     <h2>Beneficiários</h2>
+    
 @if (mensagem()) {
   <p class="aviso sucesso">{{ mensagem() }}</p>
 }
+    <div class="acoes-cabecalho" >
+    <button type="button" (click)="novoBeneficiario()">
+      Novo beneficiário
+    </button>
+
     <button
       type="button"
       (click)="carregar()"
@@ -11,7 +17,77 @@
     >
       Recarregar
     </button>
+  </div>
   </header>
+  <div class="filtros">
+  <div class="campo-filtro">
+    <label for="nome">Nome</label>
+
+    <input
+      id="nome"
+      type="text"
+      placeholder="Pesquisar por nome"
+      [value]="filtroNome()"
+      (input)="filtrarPorNome($any($event.target).value)"
+    />
+  </div>
+
+  <div class="campo-filtro">
+    <label for="status">Situação</label>
+
+    <select
+      id="status"
+      [value]="filtroStatus() ?? ''"
+      (change)="alterarStatus($any($event.target).value)"
+    >
+      <option value="">Todos</option>
+      <option value="ATIVO">Ativos</option>
+      <option value="INATIVO">Inativos</option>
+    </select>
+  </div>
+
+  <div class="campo-filtro">
+    <label for="plano">Plano</label>
+
+    <select
+      id="plano"
+      [value]="filtroPlano() ?? ''"
+      (change)="alterarPlano($any($event.target).value)"
+    >
+      <option value="">Todos</option>
+
+      @for (plano of planos(); track plano.id) {
+        <option [value]="plano.id">
+          {{ plano.nome }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="campo-filtro">
+    <label for="tamanho">Itens por página</label>
+
+    <select
+      id="tamanho"
+      [value]="tamanho()"
+      (change)="alterarTamanho($any($event.target).value)"
+    >
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+  </div>
+    <div class="campo-filtro acoes-filtro">
+    <button
+      type="button"
+      (click)="limparFiltros()"
+      [disabled]="carregando()"
+    >
+      Limpar filtros
+    </button>
+  </div>
+</div>
 
   @if (carregando()) {
     <p class="aviso">Carregando beneficiários...</p>
@@ -69,7 +145,7 @@
       </button>
 
       <span>
-        Página {{ pagina() }}
+        Página {{ pagina() }} de {{totalPaginas()}}
       </span>
 
       <button

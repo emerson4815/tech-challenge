@@ -21,6 +21,7 @@ export class BeneficiarioServico {
     tamanho = 10,
     status?: StatusBeneficiario,
     planoId?: string,
+    nome?: string,
   ): Observable<ListaPaginada<Beneficiario>> {
     let params = new HttpParams().set('pagina', pagina).set('tamanho', tamanho);
 
@@ -30,6 +31,9 @@ export class BeneficiarioServico {
 
     if (planoId) {
       params = params.set('plano_id', planoId);
+    }
+    if (nome) {
+      params = params.set('nome', nome);
     }
 
     return this.http.get<ListaPaginada<Beneficiario>>(`${this.base}/beneficiarios`, { params });

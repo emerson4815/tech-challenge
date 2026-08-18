@@ -73,8 +73,13 @@ public class BeneficiarioServico(AppDbContext db)
     {
         var detalhes = new List<DetalheErro>();
 
-        if (string.IsNullOrWhiteSpace(dados.NomeCompleto))
-            detalhes.Add(new DetalheErro("nome_completo", "obrigatorio"));
+        if (!string.IsNullOrWhiteSpace(dados.NomeCompleto) &&
+    (dados.NomeCompleto.Trim().Length < 3 ||
+     dados.NomeCompleto.Trim().Length > 120))
+        {
+            detalhes.Add(
+                new DetalheErro("nome_completo", "tamanho_invalido"));
+        }
 
         if (string.IsNullOrWhiteSpace(dados.Cpf))
         {
@@ -89,7 +94,7 @@ public class BeneficiarioServico(AppDbContext db)
         {
             detalhes.Add(new DetalheErro("data_nascimento", "obrigatorio"));
         }
-        else if (dados.DataNascimento > DateOnly.FromDateTime(DateTime.UtcNow))
+        else if (dados.DataNascimento >= DateOnly.FromDateTime(DateTime.UtcNow))
         {
             detalhes.Add(new DetalheErro("data_nascimento", "invalido"));
         }
@@ -232,7 +237,13 @@ public class BeneficiarioServico(AppDbContext db)
         var consulta = db.Beneficiarios
             .AsNoTracking()
             .AsQueryable();
+        if (!string.IsNullOrWhiteSpace(filtro.Nome))
+        {
+            var nome = filtro.Nome.Trim();
 
+            consulta = consulta.Where(b =>
+                EF.Functions.ILike(b.NomeCompleto, $"%{nome}%"));
+        }
         if (filtro.Status is not null)
         {
             consulta = consulta.Where(b => b.Status == filtro.Status);
@@ -246,7 +257,8 @@ public class BeneficiarioServico(AppDbContext db)
         var total = await consulta.CountAsync(cancellationToken);
 
         var beneficiarios = await consulta
-            .OrderBy(b => b.Id)
+            .OrderBy(b => b.NomeCompleto)
+            .ThenBy(b => b.Id)
             .Skip((filtro.Pagina - 1) * filtro.Tamanho)
             .Take(filtro.Tamanho)
             .ToListAsync(cancellationToken);

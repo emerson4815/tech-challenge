@@ -10,6 +10,7 @@ import { Plano } from '../planos/plano';
 import { formatarCpf, formatarData } from '../nucleo/formatadores';
 import { MensagemServico } from '../nucleo/mensagem-servico';
 import { BeneficiarioFormulario } from './beneficiario-formulario/beneficiario-formulario';
+import { debounce, debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-beneficiarios-lista',
@@ -34,6 +35,9 @@ export class BeneficiariosLista {
 
   protected readonly filtroPlano = signal<string | undefined>(undefined);
 
+  protected readonly filtroNome = signal('');
+  private readonly buscaNome$ = new Subject<string>();
+
   protected readonly planos = signal<Plano[]>([]);
   protected readonly carregandoPlanos = signal(true);
   protected readonly formatarCpf = formatarCpf;
@@ -54,6 +58,13 @@ export class BeneficiariosLista {
   constructor() {
     this.carregarPlanos();
     this.carregar();
+    this.buscaNome$
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((nome) => {
+        this.filtroNome.set(nome.trim());
+        this.pagina.set(1);
+        this.carregar();
+      });
   }
 
   protected carregar(): void {
@@ -61,7 +72,13 @@ export class BeneficiariosLista {
     this.erro.set(null);
 
     this.servico
-      .listar(this.pagina(), this.tamanho(), this.filtroStatus(), this.filtroPlano())
+      .listar(
+        this.pagina(),
+        this.tamanho(),
+        this.filtroStatus(),
+        this.filtroPlano(),
+        this.filtroNome(),
+      )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (resultado) => {
@@ -76,6 +93,9 @@ export class BeneficiariosLista {
           this.carregando.set(false);
         },
       });
+  }
+  protected totalPaginas(): number {
+    return Math.ceil(this.total() / this.tamanho());
   }
   protected carregarPlanos(): void {
     this.planoServico
@@ -115,6 +135,10 @@ export class BeneficiariosLista {
 
     this.pagina.update((valor) => valor + 1);
     this.carregar();
+  }
+  protected novoBeneficiario(): void {
+    this.beneficiarioSelecionado.set(null);
+    this.formularioAberto.set(true);
   }
   protected editar(beneficiario: Beneficiario): void {
     this.beneficiarioSelecionado.set(beneficiario);
@@ -159,5 +183,38 @@ export class BeneficiariosLista {
           this.erro.set(mensagemDeErro(resposta));
         },
       });
+  }
+  protected alterarStatus(valor: string): void {
+    this.filtroStatus.set(valor ? (valor as StatusBeneficiario) : undefined);
+
+    this.pagina.set(1);
+    this.carregar();
+  }
+
+  protected alterarPlano(valor: string): void {
+    this.filtroPlano.set(valor || undefined);
+
+    this.pagina.set(1);
+    this.carregar();
+  }
+
+  protected alterarTamanho(valor: string): void {
+    this.tamanho.set(Number(valor));
+    this.pagina.set(1);
+    this.carregar();
+  }
+
+  protected filtrarPorNome(valor: string): void {
+    this.buscaNome$.next(valor);
+  }
+  protected limparFiltros(): void {
+    this.filtroNome.set('');
+    this.filtroStatus.set(undefined);
+    this.filtroPlano.set(undefined);
+
+    this.tamanho.set(10);
+    this.pagina.set(1);
+
+    this.carregar();
   }
 }

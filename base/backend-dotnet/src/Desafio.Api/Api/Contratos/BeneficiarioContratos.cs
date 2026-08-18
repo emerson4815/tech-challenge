@@ -38,6 +38,7 @@ public sealed class BeneficiarioFiltro
 
     [FromQuery(Name = "plano_id")]
     public Guid? PlanoId { get; init; }
+    public string? Nome { get; init; }
 }
 public sealed record AtualizarBeneficiarioRequest(
     string? NomeCompleto,

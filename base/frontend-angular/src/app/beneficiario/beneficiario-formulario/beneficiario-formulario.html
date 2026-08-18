@@ -36,8 +36,9 @@
   <input
     id="cpf"
     type="text"
-    maxlength="11"
-    [(ngModel)]="cpf"
+    maxlength="14"
+    [ngModel]="formatarCpf(cpf)"
+    (ngModelChange)="alterarCpf($event)"
     [disabled]="salvando()"
   />
 }
