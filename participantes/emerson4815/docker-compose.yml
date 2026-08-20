@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: emerson4815/desafio-4tech-web:1.0.2
+    image: emerson4815/desafio-4tech-web:1.0.3
     ports:
       - "4200:80"
     depends_on:

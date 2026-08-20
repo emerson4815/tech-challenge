@@ -3,7 +3,7 @@
   "nome": "Emerson Ribeiro da Cunha",
   "email": "lyncoln_erc@hotmail.com",
   "imagem_api": "emerson4815/desafio-4tech-api:1.0.2",
-  "imagem_web": "emerson4815/desafio-4tech-web:1.0.2",
+  "imagem_web": "emerson4815/desafio-4tech-web:1.0.3",
   "stack": [
     "dotnet-10",
     "postgres-17",
