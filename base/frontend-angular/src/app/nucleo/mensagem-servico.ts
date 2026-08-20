@@ -5,7 +5,7 @@ export class MensagemServico {
   readonly mensagem = signal<string | null>(null);
 
   sucesso(mensagem: string): void {
-    this.mensagem.set(mensagem);
+    this.mensagem.set(mensagem.toUpperCase());
 
     setTimeout(() => {
       this.mensagem.set(null);

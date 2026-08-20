@@ -137,7 +137,8 @@ export class BeneficiarioFormulario {
         },
         error: (resposta: HttpErrorResponse) => {
           this.salvando.set(false);
-          this.erro.set(mensagemDeErro(resposta));
+          this.erro.set(mensagemDeErro(resposta).toUpperCase());
+          alert(mensagemDeErro(resposta));
         },
       });
   }
@@ -164,7 +165,7 @@ export class BeneficiarioFormulario {
         },
         error: (resposta: HttpErrorResponse) => {
           this.salvando.set(false);
-          this.erro.set(mensagemDeErro(resposta));
+          this.erro.set(mensagemDeErro(resposta).toUpperCase());
         },
       });
   }

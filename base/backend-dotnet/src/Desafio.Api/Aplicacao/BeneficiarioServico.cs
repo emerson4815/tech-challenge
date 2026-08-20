@@ -73,13 +73,16 @@ public class BeneficiarioServico(AppDbContext db)
     {
         var detalhes = new List<DetalheErro>();
 
-        if (!string.IsNullOrWhiteSpace(dados.NomeCompleto) &&
-    (dados.NomeCompleto.Trim().Length < 3 ||
-     dados.NomeCompleto.Trim().Length > 120))
+        if (string.IsNullOrWhiteSpace(dados.NomeCompleto))
         {
-            detalhes.Add(
-                new DetalheErro("nome_completo", "tamanho_invalido"));
+            detalhes.Add(new DetalheErro("nome_completo", "obrigatorio"));
         }
+        else if (dados.NomeCompleto.Trim().Length < 3 ||
+                 dados.NomeCompleto.Trim().Length > 120)
+        {
+            detalhes.Add(new DetalheErro("nome_completo", "tamanho_invalido"));
+        }
+
 
         if (string.IsNullOrWhiteSpace(dados.Cpf))
         {
@@ -89,6 +92,7 @@ public class BeneficiarioServico(AppDbContext db)
         {
             detalhes.Add(new DetalheErro("cpf", "invalido"));
         }
+
 
         if (dados.DataNascimento is null)
         {
@@ -105,9 +109,12 @@ public class BeneficiarioServico(AppDbContext db)
         }
 
         if (detalhes.Count > 0)
+        {
             throw new ValidacaoException(
                 "Dados do beneficiário inválidos",
                 detalhes);
+        }
+
     }
     private async Task GarantirPlanoExisteAsync(
             Guid planoId,
