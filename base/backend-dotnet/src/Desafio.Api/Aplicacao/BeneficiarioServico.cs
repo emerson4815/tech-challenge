@@ -208,11 +208,19 @@ public class BeneficiarioServico(AppDbContext db)
     {
         var detalhes = new List<DetalheErro>();
 
-        if (dados.NomeCompleto is not null &&
-            string.IsNullOrWhiteSpace(dados.NomeCompleto))
+        if (dados.NomeCompleto is not null)
         {
-            detalhes.Add(
-                new DetalheErro("nome_completo", "invalido"));
+            if (string.IsNullOrWhiteSpace(dados.NomeCompleto))
+            {
+                detalhes.Add(
+                    new DetalheErro("nome_completo", "invalido"));
+            }
+            else if (dados.NomeCompleto.Trim().Length < 3 ||
+                     dados.NomeCompleto.Trim().Length > 120)
+            {
+                detalhes.Add(
+                    new DetalheErro("nome_completo", "tamanho_invalido"));
+            }
         }
 
         if (dados.DataNascimento is not null &&
